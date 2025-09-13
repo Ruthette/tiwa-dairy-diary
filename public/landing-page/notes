@@ -1,0 +1,4 @@
+netlify deploy --dir=public/landing-page --prod --site=2b7ee2a5-391d-47da-aabe-461446a9340d
+
+
+

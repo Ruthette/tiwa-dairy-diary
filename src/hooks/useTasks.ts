@@ -36,7 +36,12 @@ export const useTasks = () => {
           )
         `)
         .eq('user_id', user.id)
+        .order('status', {
+          ascending: false,
+          nullsFirst: false,
+        })
         .order('due_date', { ascending: true });
+        ;
       
       if (error) {
         console.error('Error fetching tasks:', error);

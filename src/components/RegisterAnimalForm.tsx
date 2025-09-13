@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Upload, X, Camera } from 'lucide-react';
+import { CalendarIcon, Upload, X, Camera, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useCreateAnimal } from '@/hooks/useAnimals';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client'; // Adjust this import path as needed
 
 const animalSchema = z.object({
   name: z.string().min(1, 'Animal name/tag is required'),
@@ -39,6 +40,8 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
   const { t } = useLanguage();
   const createAnimal = useCreateAnimal();
   const [uploadedPhoto, setUploadedPhoto] = useState<File | null>(null);
+  const [customBreed, setCustomBreed] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const form = useForm<AnimalFormData>({
     resolver: zodResolver(animalSchema),
@@ -47,6 +50,57 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
       source: 'Born on farm',
     },
   });
+
+  const uploadImageToSupabase = async (file: File): Promise<string | null> => {
+    try {
+      setIsUploadingPhoto(true);
+      
+      // Generate a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `animals/${fileName}`;
+
+      // Upload file to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('upload')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        toast({
+          title: "Upload failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('upload')
+        .getPublicUrl(filePath);
+
+      toast({
+        title: "Photo uploaded successfully",
+        description: "Image ready to be saved with animal record",
+      });
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Unexpected error during upload:', error);
+      toast({
+        title: "Upload failed",
+        description: "An unexpected error occurred during upload",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,7 +116,7 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
       }
       
       // Check file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: "Invalid file type",
@@ -74,33 +128,69 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
       
       setUploadedPhoto(file);
       toast({
-        title: "Photo uploaded",
-        description: `${file.name} ready to attach`,
+        title: "Photo selected",
+        description: `${file.name} ready for upload`,
       });
     }
   };
 
   const onSubmit = async (data: AnimalFormData) => {
     try {
+      let photoUrl: string | null = null;
+
+      // Upload photo to Supabase if one was selected
+      if (uploadedPhoto) {
+        photoUrl = await uploadImageToSupabase(uploadedPhoto);
+        if (!photoUrl) {
+          // Upload failed, but we can still continue without the photo
+          toast({
+            title: "Continuing without photo",
+            description: "Animal will be registered without the photo",
+            variant: "default",
+          });
+        }
+      }
+
+      // if user selected "Other", replace breed with custom input
+      const finalBreed =
+        data.breed === "Other" && customBreed.trim() !== ""
+          ? customBreed.trim()
+          : data.breed;
+
       const animalData = {
         name: data.name,
         tag: data.name, // Use the same value for both name and tag
-        breed: data.breed,
+        breed: finalBreed,
         date_of_birth: format(data.date_of_birth, 'yyyy-MM-dd'),
         gender: data.gender,
         source: data.source,
         notes: data.notes || null,
-        photo_url: uploadedPhoto ? `uploaded_${uploadedPhoto.name}` : null, // Store photo reference for now
+        photo_url: photoUrl, // Use the actual Supabase URL or null
       };
 
       await createAnimal.mutateAsync(animalData);
       
       form.reset();
       setUploadedPhoto(null);
+      setCustomBreed("");
       onSuccess?.();
       onClose?.();
     } catch (error) {
       console.error('Error creating animal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to register animal. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeUploadedPhoto = () => {
+    setUploadedPhoto(null);
+    // Reset the file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   };
 
@@ -125,10 +215,14 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
                 <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 <div className="flex justify-center">
                   <label className="cursor-pointer">
-                    <Button type="button" variant="outline" asChild>
+                    <Button type="button" variant="outline" asChild disabled={isUploadingPhoto}>
                       <span>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Choose Photo
+                        {isUploadingPhoto ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4 mr-2" />
+                        )}
+                        {isUploadingPhoto ? 'Preparing...' : 'Choose Photo'}
                       </span>
                     </Button>
                     <input
@@ -136,6 +230,7 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
                       className="hidden"
                       accept="image/*"
                       onChange={handlePhotoUpload}
+                      disabled={isUploadingPhoto}
                     />
                   </label>
                 </div>
@@ -149,7 +244,8 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
                       type="button" 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => setUploadedPhoto(null)}
+                      onClick={removeUploadedPhoto}
+                      disabled={isUploadingPhoto}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -205,6 +301,19 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
                 </FormItem>
               )}
             />
+
+            {form.watch("breed") === "Other" && (
+              <div className="space-y-2 mt-2">
+                <Label htmlFor="custom_breed">Specify Breed *</Label>
+                <Input
+                  id="custom_breed"
+                  value={customBreed}
+                  onChange={(e) => setCustomBreed(e.target.value)}
+                  placeholder="Enter custom breed"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -320,9 +429,11 @@ const RegisterAnimalForm = ({ onSuccess, onClose }: RegisterAnimalFormProps) => 
           <Button 
             type="submit" 
             className="w-full"
-            disabled={createAnimal.isPending}
+            disabled={createAnimal.isPending || isUploadingPhoto}
           >
-            {createAnimal.isPending ? 'Adding Animal...' : 'Add Animal to Herd'}
+            {createAnimal.isPending ? 'Adding Animal...' : 
+             isUploadingPhoto ? 'Preparing Photo...' : 
+             'Add Animal to Herd'}
           </Button>
         </form>
       </Form>

@@ -49,7 +49,7 @@ const App = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={<Navigate to="/auth" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/diary" element={<Layout><AnimalDiary /></Layout>} />
                 <Route path="/tasks" element={<Layout><Tasks /></Layout>} />

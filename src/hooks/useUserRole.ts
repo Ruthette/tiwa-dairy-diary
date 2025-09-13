@@ -25,7 +25,7 @@ export const useUserRole = () => {
       }
       
       console.log('User role data:', data);
-      return data?.role || 'admin'; // Default to admin for all users
+      return data?.role || 'owner'; // Default to owner for all users
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
@@ -37,7 +37,7 @@ export const useAssignRole = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: 'admin' | 'worker' }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: 'owner' | 'worker' }) => {
       const { error } = await supabase
         .from('user_roles')
         .upsert({

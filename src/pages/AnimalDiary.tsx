@@ -32,23 +32,23 @@ const AnimalDiary = () => {
   console.log('AnimalDiary render - authLoading:', authLoading, 'user:', !!user);
 
   // Redirect to auth if not authenticated
-  if (!authLoading && !user) {
-    console.log('Redirecting to auth - no user');
-    return <Navigate to="/auth" replace />;
-  }
+  // if (!authLoading && !user) {
+  //   console.log('Redirecting to auth - no user');
+  //   return <Navigate to="/auth" replace />;
+  // }
 
-  // Show loading state while checking auth
-  if (authLoading) {
-    console.log('Showing auth loading state');
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-gray-600">Loading...</div>
-        </div>
-      </div>
-    );
-  }
+  // // Show loading state while checking auth
+  // if (authLoading) {
+  //   console.log('Showing auth loading state');
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+  //         <div className="text-gray-600">Loading...</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const filteredAnimals = animals.filter(animal =>
     animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -101,9 +101,9 @@ const AnimalDiary = () => {
           onBack={handleBackToList} 
         />
         <div className="p-4">
-          <RoleBasedAccess allowedRoles={['admin']}>
-            <RegisterAnimalForm onClose={handleFormClose} />
-          </RoleBasedAccess>
+          {/* <RoleBasedAccess allowedRoles={['owner', 'worker']}> */}
+          <RegisterAnimalForm onClose={handleFormClose} />
+          {/* </RoleBasedAccess> */}
         </div>
       </div>
     );
@@ -145,12 +145,12 @@ const AnimalDiary = () => {
             </h1>
             <p className="text-gray-600 text-sm mt-1">Manage your dairy cows and herd</p>
           </div>
-          <RoleBasedAccess allowedRoles={['admin']}>
-            <Button onClick={handleAddAnimal} className="bg-green-600 hover:bg-green-700" size="sm">
-              <Plus className="h-4 w-4 mr-1 md:mr-2" />
-              {t('addAnimal')}
-            </Button>
-          </RoleBasedAccess>
+          {/* <RoleBasedAccess allowedRoles={['owner', 'worker']}> */}
+          <Button onClick={handleAddAnimal} className="bg-green-600 hover:bg-green-700" size="sm">
+            <Plus className="h-4 w-4 mr-1 md:mr-2" />
+            {t('addAnimal')}
+          </Button>
+          {/* </RoleBasedAccess> */}
         </div>
 
         {/* Tabs */}
@@ -209,12 +209,12 @@ const AnimalDiary = () => {
                         }
                       </p>
                       {animals.length === 0 && (
-                        <RoleBasedAccess allowedRoles={['admin']}>
-                          <Button onClick={handleAddAnimal} className="bg-green-600 hover:bg-green-700">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Register Your First Cow
-                          </Button>
-                        </RoleBasedAccess>
+                        // <RoleBasedAccess allowedRoles={['owner', 'worker']}>
+                        <Button onClick={handleAddAnimal} className="bg-green-600 hover:bg-green-700">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Register Your First Cow
+                        </Button>
+                        // </RoleBasedAccess>
                       )}
                     </CardContent>
                   </Card>

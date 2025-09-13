@@ -91,7 +91,7 @@ const handleSignIn = async (e: React.FormEvent) => {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error: any) {
       const errorMessage = error?.message || "An unexpected error occurred";

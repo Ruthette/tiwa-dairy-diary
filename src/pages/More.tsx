@@ -27,6 +27,7 @@ import RoleBasedAccess from '@/components/RoleBasedAccess';
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseAdmin } from "@/integrations/supabase/client";
 // import { useSession } from "@supabase/auth-helpers-react";
+import { useNavigate } from 'react-router-dom';
 
 
 const More = () => {
@@ -34,6 +35,8 @@ const More = () => {
   const { user, userRole, signOut } = useAuth();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState('');
+  const navigate = useNavigate();
+
 
   const handleLanguageToggle = () => {
     setLanguage(language === 'en' ? 'sw' : 'en');
@@ -110,7 +113,7 @@ const More = () => {
             {t('more')}
           </h1>
           <Badge variant="outline">
-            {userRole === 'admin' ? 'Admin' : 'Worker'}
+            {userRole === 'owner' ? '👑 Owner' : '👷 Worker'}
           </Badge>
         </div>
 
@@ -195,32 +198,6 @@ const More = () => {
                 <Smartphone className="h-4 w-4 mr-2" />
                 Coming Soon
               </Button>
-            </div>
-
-            {/* New Button for Email Form */}
-            <div>
-              <Button
-                variant="outline"
-                onClick={() => setShowEmailForm(!showEmailForm)}
-              >
-                {showEmailForm ? 'Confirm' : 'Add worker'}
-              </Button>
-
-              {showEmailForm && (
-                <form onSubmit={handleEmailSubmit} className="mt-3 space-y-2">
-                  <input
-                    type="email"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="Enter the worker's email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <Button type="submit" className="w-full">
-                    Save Email
-                  </Button>
-                </form>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -390,7 +367,7 @@ const More = () => {
         </Card>
 
         {/* Admin Only Features */}
-        <RoleBasedAccess allowedRoles={['admin']}>
+        <RoleBasedAccess allowedRoles={['owner']}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -407,11 +384,31 @@ const More = () => {
                       Manage worker accounts and permissions
                     </p>
                   </div>
-                  <Button variant="outline" disabled>
-                    <Users className="h-4 w-4 mr-2" />
-                    Coming Soon
-                  </Button>
+                  {/* New Button for Email Form */}
+                  <div>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowEmailForm(!showEmailForm)}
+                    >
+                      {showEmailForm ? 'Cancel' : 'Add worker'}
+                    </Button>
+                  </div>
                 </div>
+                {showEmailForm && (
+                  <form onSubmit={handleEmailSubmit} className="mt-3 space-y-2">
+                    <input
+                      type="email"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      placeholder="Enter the worker's email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <Button type="submit" className="w-full">
+                      Save Email
+                    </Button>
+                  </form>
+                )}
                 
                 <div className="flex justify-between items-center">
                   <div>
@@ -470,12 +467,19 @@ const More = () => {
               </div>
             )}
             
-            <Button 
-              variant="outline" 
-              onClick={() => signOut()}
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (user) {
+                  // If user is logged in, sign them out
+                  signOut();
+                } else {
+                  navigate("/auth"); 
+                }
+              }}
               className="w-full"
             >
-              Sign Out
+              {user ? "Sign Out" : "Sign In"}
             </Button>
           </CardContent>
         </Card>

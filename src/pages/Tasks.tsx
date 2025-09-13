@@ -14,6 +14,7 @@ import TaskCard from '@/components/TaskCard';
 import PageHeader from '@/components/PageHeader';
 import { Tables } from '@/integrations/supabase/types';
 
+
 type Task = Tables<'tasks'>;
 
 const Tasks = () => {
@@ -26,6 +27,7 @@ const Tasks = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [animalFilter, setAnimalFilter] = useState('all');
+  
 
   const filteredTasks = useMemo(() => {
     let filtered = tasks;
@@ -90,23 +92,23 @@ const Tasks = () => {
     setAnimalFilter('all');
   };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <div className="p-4 max-w-6xl mx-auto">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <div className="text-red-600 mb-4">⚠️ Error loading tasks</div>
-              <p className="text-gray-600 mb-4">Please try refreshing the page</p>
-              <Button onClick={() => window.location.reload()}>
-                Refresh Page
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 pb-20">
+  //       <div className="p-4 max-w-6xl mx-auto">
+  //         <Card>
+  //           <CardContent className="p-12 text-center">
+  //             <div className="text-red-600 mb-4">⚠️ Error loading tasks</div>
+  //             <p className="text-gray-600 mb-4">Please try refreshing the page</p>
+  //             <Button onClick={() => window.location.reload()}>
+  //               Refresh Page
+  //             </Button>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

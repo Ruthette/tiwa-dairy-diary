@@ -12,12 +12,12 @@ export const fetchUserRole = async (userId: string): Promise<UserRole> => {
     
     if (error) {
       console.error('Error fetching user role:', error);
-      return 'admin'; // Default to admin for all users
+      return 'owner'; // Default to owner for all users
     }
     
-    return data?.role || 'admin'; // Default to admin if no role found
+    return data?.role || 'owner'; // Default to admin if no role found
   } catch (error) {
     console.error('Error fetching user role:', error);
-    return 'admin';
+    return 'owner';
   }
 };

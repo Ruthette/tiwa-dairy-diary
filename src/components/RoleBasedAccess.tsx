@@ -3,7 +3,7 @@ import React from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 
 interface RoleBasedAccessProps {
-  allowedRoles: ('admin' | 'worker')[];
+  allowedRoles: ('owner' | 'worker')[];
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }
@@ -19,7 +19,7 @@ const RoleBasedAccess = ({ allowedRoles, children, fallback }: RoleBasedAccessPr
     );
   }
 
-  if (!userRole || !allowedRoles.includes(userRole as 'admin' | 'worker')) {
+  if (!userRole || !allowedRoles.includes(userRole as 'owner' | 'worker')) {
     return fallback || (
       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <p className="text-yellow-800 text-sm">

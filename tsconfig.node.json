@@ -29,7 +29,7 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "vite.config.ts",
+    "vite.config.js",
     "vitest.config.ts",
     "tailwind.config.ts",
     "postcss.config.js"

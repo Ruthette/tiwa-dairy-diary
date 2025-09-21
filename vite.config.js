@@ -1,7 +1,7 @@
+// vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "node:path";
-
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -14,27 +14,24 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
-  ].filter(Boolean),
-
-export default defineConfig({
-  plugins: [react()],
-
+    // Your componentTagger plugin here if you need it.
+    // It's not a standard Vite plugin, so you'll need to define it.
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
   build: {
-    outDir: "dist", // ✅ Changed this to the standard 'dist' folder
+    outDir: "dist",
     target: "esnext",
     minify: "esbuild",
-    sourcemap: false, // ⬇️ Set to false for faster builds and smaller output
+    sourcemap: false,
     cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"], // ✅ Grouped core dependencies
+          vendor: ["react", "react-dom", "react-router-dom"],
           supabase: ["@supabase/supabase-js", "@tanstack/react-query"],
           ui: [
             "@radix-ui/react-dialog",
@@ -42,7 +39,7 @@ export default defineConfig({
             "react-hook-form",
             "@hookform/resolvers",
             "zod",
-          ], // ✅ Grouped remaining dependencies
+          ],
         },
       },
     },
@@ -52,4 +49,4 @@ export default defineConfig({
     target: "esnext",
     drop: ["console", "debugger"],
   },
-});
+}));
